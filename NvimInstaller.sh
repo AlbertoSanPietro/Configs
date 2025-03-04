@@ -2,7 +2,7 @@
 # Full Neovim environment setup script for Ubuntu-based systems
 
 # System dependencies
-sudo apt-get update && sudo apt-get install -y \
+sudo apt-get update && sudo apt upgrade && sudo apt install \
     neovim \
     git \
     nodejs \
