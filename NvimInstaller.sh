@@ -10,7 +10,6 @@ sudo apt-get update && sudo apt-get install -y \
     python3-pip \
     openjdk-17-jdk \
     golang \
-    dotnet-sdk-6.0 \
     php \
     composer \
     cargo
@@ -23,7 +22,7 @@ mkdir -p "$NVIM_DIR"
 if [ -d "$NVIM_DIR/.git" ]; then
     git -C "$NVIM_DIR" pull
 else
-    git clone https://github.com/AlbertoSanPietro/your-nvim-config.git "$NVIM_DIR"
+    git clone https://github.com/AlbertoSanPietro/Configs.git "$NVIM_DIR"
 fi
 
 # Install vim-plug
