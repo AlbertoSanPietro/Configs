@@ -1,0 +1,169 @@
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Inserts a blank line between shell prompts
+add_newline = true
+
+# Replace the '❯' symbol in the prompt with '➜'
+[character] # The name of the module we are configuring is 'character'
+success_symbol = '[➜](bold green)' # The 'success_symbol' segment is being set to '➜' with the color 'bold green'
+error_symbol = "[✗](bold red)"
+
+# Display the current git branch
+[git_branch]
+format = "on  [$branch](bold purple)"
+
+#TEST
+[git_status]
+format = "[$all_status$ahead_behind](bold red) "
+conflicted = "≠"
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+untracked = "?"
+stashed = "$"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+# Display the current working directory
+[directory]
+truncation_length = 3
+
+# Disable the package module, hiding it from the prompt completely
+[package]
+disabled = true
+
+# ~/.config/starship.toml
+
+[java]
+#symbol = '☕ '
+symbol = " "
+format = "via [Java $symbol($version)](bold #6F4E37) "
+#style = "#6F4E37"
+detect_files = ["pom.xml", "build.gradle", "build.gradle.kts", "build.xml"]
+detect_folders = ["src", "bin"]
+detect_extensions = ["java"]
+
+[golang]
+format = 'via [Go $symbol($version )](bold #00ADD8)'
+symbol = " "
+detect_extensions = ["go"]
+
+[custom.assembly]
+format = 'via [ASM $symbol($version )](bold #8B0000)'
+#symbol = " "
+symbol = " "
+detect_extensions = ["asm", "nasm"]
+
+[custom.bison]
+format = 'via [Bison/Yacc $symbol($version )](blue bold)'
+symbol = " "
+detect_extensions = ["y", "yy", "y++", "yxx"]
+
+[custom.flex]
+format = 'via [Flex $symbol($version )](bold #FF69B4)'
+symbol= "󰿗 "
+detect_extensions = ["l", "ll", "lpp", "l++", "lxx"]
+
+[custom.vimscript]
+format ="via [VimScript $symbol($version )](#98971a)"
+symbol = " "
+detect_extensions = ["vim"]
+
+[python]
+format = 'via [Python$symbol($version )](bold #FFD43B)'
+symbol = " "
+
+[rust]
+format = 'via [Rust$symbol($version )](bold #B7410E)'
+symbol = "󱘗 "
+#symbol = " "
+detect_files = ["cargo.toml", "main.rs"]
+detect_extensions = ["rs"]
+
+[c]
+format = "via [C $symbol($version)](bright-red) "
+symbol = " "
+detect_extensions = ["c", "h"]
+
+[custom.cpp]
+format = "via [C++ $symbol($version)](blue bold) "
+#symbol = "󰙲"
+#symbol = ""
+symbol = ""
+detect_extensions = ["cpp", "hpp", "cc", "c++", "C", "cxx", "cp", "hxx", "hh"]
+
+[cmake]
+#format = "via "
+symbol = " "
+
+[docker_context]
+symbol = " "
+format = "via [Docker$symbol($context)](blue bold)"
+
+[php]
+symbol = " "
+format = 'via [Php$symbol($version )](bold #FFD43B)'
+detect_extensions = ["php"]
+
+[hostname]
+ssh_symbol = " "
+
+[haskell]
+symbol = " "
+
+[nix_shell]
+symbol = " "
+
+[lua]
+format = "via Lua $symbol($version )"
+symbol = " "
+
+[memory_usage]
+symbol = "󰍛 "
+
+
+[pijul_channel]
+symbol = " "
+
+[fossil_branch]
+symbol = " "
+
+[git_commit]
+tag_symbol = '  '
+
+[os.symbols]
+Ubuntu = " "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
