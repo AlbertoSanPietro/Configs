@@ -8,6 +8,8 @@
 :set softtabstop=2
 :set mouse=a
 
+:set modeline
+
 "HERE
 " Enable/disable true color (choose one)
 " set termguicolors    " Uncomment for GUI colors
@@ -61,9 +63,12 @@ Plug 'L3MON4D3/LuaSnip'         " Snippet engine
 Plug 'saadparwaiz1/cmp_luasnip' " Snippet source
 "Plug 'jose-elias-alvarez/null-ls.nvim' " For linters/formatters deprecated!
 
+Plug 'mfussenegger/nvim-dap'          " Debug Adapter Protocol
+Plug 'rcarriga/nvim-dap-ui'           " UI for DAP
+Plug 'theHamsta/nvim-dap-virtual-text' " Virtual text support
 
 call plug#end()
-autocmd VimEnter * NERDTree
+"autocmd VimEnter * NERDTree
 
 "REMAPS
 "Ctrl+t toggles the tree
@@ -80,6 +85,16 @@ let g:NERDTreeDirArrowCollapsibile="-"
 "I dont fucking know tbh
 " LSP and Autocompletion setup
 lua << EOF
+
+vim.diagnostic.config({
+  virtual_text = true,
+  signs = true,
+  underline = true,
+  severity_sort = true,
+  update_in_insert = false,
+})
+
+
 -- Setup Mason for LSP management
 require("mason").setup({
     ensure_installed = {
@@ -144,7 +159,31 @@ require('lspconfig').jdtls.setup{
 -- C/C++ LSP
 require('lspconfig').clangd.setup{
     capabilities = capabilities,
+    cmd = { "clangd", "--fallback-style=llvm", "--header-insertion=never", "--query-driver=/usr/bin/g++" },
+    filetypes  = {"c", "cpp", "objc", "objcpp"},
 }
+
+--Attempt for better C++ support
+-- Enhanced Linting Configuration (clang-tidy)
+require('lint').linters_by_ft = {
+  c = {'clangtidy'},
+  cpp = {'clangtidy'},
+}
+
+--[[ For C++: create a file in the project directory: 
+  compile_commands.json
+Example content: 
+
+[
+  {
+    "directory": "/home/luce/C-Secrets",
+    "command": "g++ -std=c++17 -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -Wall -Wextra -c test.cpp",
+    "file": "/home/luce/C-Secrets/test.cpp"
+  }
+]
+
+--]]
+
 
 -- Rust
 require('lspconfig').rust_analyzer.setup{
