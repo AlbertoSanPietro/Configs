@@ -4,3 +4,5 @@ A simple, perhaps growing, collection of configs. It is dedicated first and fore
 
 The repo was created to make a bash script installer more ubiqutious for me and a couple friends of mine.
 
+The file aliases.txt contains a series of useful development aliases for C/C++.
+v == vim
