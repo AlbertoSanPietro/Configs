@@ -17,8 +17,8 @@ set notermguicolors
 
 augroup MyColors
   autocmd!
-  autocmd ColorScheme lunaperche highlight Identifier guifg=#00FFFF ctermfg=Cyan
-  autocmd ColorScheme lunaperche highlight Comment    guifg=#FF0000 ctermfg=Red  ctermbg=NONE
+  autocmd ColorScheme lunaperche highlight Identifier guifg=#017777 ctermfg=Cyan
+  autocmd ColorScheme lunaperche highlight Comment    guifg=#FF0177 ctermfg=Red ctermbg=NONE
   autocmd ColorScheme lunaperche highlight String     guifg=#ff5fd7 ctermfg=206
   autocmd ColorScheme lunaperche highlight Normal     guifg=#0000FF ctermfg=Blue
   autocmd ColorScheme lunaperche highlight Number     guifg=#FFFFFF ctermfg=White
