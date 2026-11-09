@@ -1,3 +1,6 @@
+"=====================================================================
+" Basic Editor Settings
+"=====================================================================
 set number
 set relativenumber
 set autoindent
@@ -15,10 +18,13 @@ set encoding=utf-8
 set notermguicolors
 " set termguicolors
 
+"=====================================================================
+" Colorscheme & Highlight Overrides
+"=====================================================================
 augroup MyColors
   autocmd!
-  autocmd ColorScheme lunaperche highlight Identifier guifg=#017777 ctermfg=Cyan
-  autocmd ColorScheme lunaperche highlight Comment    guifg=#FF0177 ctermfg=Red ctermbg=NONE
+  autocmd ColorScheme lunaperche highlight Identifier guifg=#00FFFF ctermfg=Cyan
+  autocmd ColorScheme lunaperche highlight Comment    guifg=#FF0000 ctermfg=Red  ctermbg=NONE
   autocmd ColorScheme lunaperche highlight String     guifg=#ff5fd7 ctermfg=206
   autocmd ColorScheme lunaperche highlight Normal     guifg=#0000FF ctermfg=Blue
   autocmd ColorScheme lunaperche highlight Number     guifg=#FFFFFF ctermfg=White
@@ -31,7 +37,9 @@ catch
   colorscheme default
 endtry
 
-
+"=====================================================================
+" Plugins
+"=====================================================================
 call plug#begin('~/.config/nvim/plugged')
 
 " --- LSP and Tooling ---
@@ -51,6 +59,10 @@ Plug 'morhetz/gruvbox'
 
 " --- Syntax and Language Packs ---
 Plug 'sheerun/vim-polyglot'
+" Note: vim-scripts/c.vim is very old; polyglot handles C/C++ better usually.
+
+" --- LaTeX ---
+Plug 'lervag/vimtex'
 
 " --- Java Specific ---
 Plug 'mfussenegger/nvim-jdtls'
@@ -78,23 +90,73 @@ Plug 'stevearc/conform.nvim'
 
 call plug#end()
 
+"=====================================================================
+" C/C++ filetype detection (override vim-polyglot when necessary)
+"=====================================================================
+" Neovim's builtin detector will use these extensions first.
+lua << EOF
+vim.filetype.add({
+    extension = {
+        c = "c",
+        h = "c",
+        cpp = "cpp",
+        hpp = "cpp",
+    },
+})
+EOF
 
+" Explicitly override later filetype decisions from language plugins.
+augroup CCppFiletypes
+  autocmd!
+  autocmd BufReadPost,BufNewFile *.c,*.h setlocal filetype=c
+  autocmd BufReadPost,BufNewFile *.cpp,*.cc,*.cxx,*.hpp,*.hh,*.hxx setlocal filetype=cpp
+augroup END
+
+"=====================================================================
+" Keybindings
+"=====================================================================
 nnoremap <C-t> :NERDTreeToggle<CR>
 nnoremap <C-f> :NERDTreeFocus<CR>
 
 let g:NERDTreeDirArrowExpandable = "+"
 let g:NERDTreeDirArrowCollapsible = "-"
 
-
+"=====================================================================
+" Modern Neovim LSP + Mason + CMP + Lint Configuration
+"=====================================================================
 lua << EOF
--- 1. Setup Mason
+-- 1. Mason package management
 require("mason").setup()
 
--- 2. Setup Capabilities (Completion)
+-- 2. Shared LSP completion capabilities
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
+vim.lsp.config("*", {
+    capabilities = capabilities,
+})
 
--- 3. Setup Mason-LSPConfig with Handlers
--- This is the safest way to configure LSP on newer Neovim versions.
+-- 3. LSP server settings (Neovim 0.11+ / mason-lspconfig 2.x)
+vim.lsp.config("clangd", {
+    cmd = {
+        "clangd",
+        "--fallback-style=llvm",
+        "--header-insertion=never",
+        "--query-driver=/usr/bin/gcc,/usr/bin/g++",
+    },
+    filetypes = { "c", "cpp", "objc", "objcpp" },
+})
+
+vim.lsp.config("rust_analyzer", {
+    settings = {
+        ["rust-analyzer"] = { diagnostics = { enable = true } },
+    },
+})
+
+vim.lsp.config("verible", {
+    filetypes = { "verilog", "systemverilog" },
+})
+
+-- Mason now automatically enables installed language servers.
+-- jdtls is excluded because it is started separately below.
 require("mason-lspconfig").setup({
     ensure_installed = {
         "arduino_language_server",
@@ -108,54 +170,7 @@ require("mason-lspconfig").setup({
         "verible",
         "omnisharp",
     },
-    handlers = {
-        -- The first entry is the "default handler" for all servers without a specific override
-        function(server_name)
-            -- We use pcall to prevent crashes if a server definition is broken in nightly
-            local status_ok, server = pcall(require, "lspconfig")
-            if status_ok and server[server_name] then
-                server[server_name].setup({
-                    capabilities = capabilities,
-                })
-            end
-        end,
-
-        -- OVERRIDES: Specific settings for specific servers
-
-        ["jdtls"] = function()
-            -- Intentionally empty. We handle Java in the separate ftplugin block below.
-            -- This prevents jdtls from starting twice or crashing.
-        end,
-
-        ["clangd"] = function()
-            require("lspconfig").clangd.setup({
-                capabilities = capabilities,
-                cmd = { 
-                    "clangd", 
-                    "--fallback-style=llvm", 
-                    "--header-insertion=never", 
-                    "--query-driver=/usr/bin/g++" 
-                },
-                filetypes = { "c", "cpp", "objc", "objcpp" },
-            })
-        end,
-
-        ["rust_analyzer"] = function()
-            require("lspconfig").rust_analyzer.setup({
-                capabilities = capabilities,
-                settings = {
-                    ["rust-analyzer"] = { diagnostics = { enable = true } }
-                }
-            })
-        end,
-
-        ["verible"] = function()
-            require("lspconfig").verible.setup({
-                capabilities = capabilities,
-                filetypes = { "verilog", "systemverilog" }
-            })
-        end,
-    }
+    automatic_enable = { exclude = { "jdtls" } },
 })
 
 -- 4. Setup Completion (CMP)
@@ -195,35 +210,48 @@ vim.api.nvim_create_autocmd("BufWritePost", {
 })
 EOF
 
-
+"=====================================================================
+" Java LSP (jdtls) — load per Java file
+"=====================================================================
 lua << EOF
 vim.api.nvim_create_autocmd("FileType", {
     pattern = "java",
-    callback = function()
+    callback = function(args)
         local jdtls = require("jdtls")
-        -- Find the root of the project (gradlew, mvnw, or .git)
-        local root = jdtls.setup.find_root({ ".git", "mvnw", "gradlew" })
-        if not root then return end
+        local file = vim.api.nvim_buf_get_name(args.buf)
+        if file == "" then return end
 
-        -- Create a unique workspace folder for this project
-        local project_name = vim.fn.fnamemodify(root, ":p:h:t")
-        local workspace_dir = vim.fn.expand("~/.local/share/jdtls-workspace/") .. project_name
+        -- Prefer the root of a Maven/Gradle project. For exercises consisting
+        -- of standalone .java files, use the containing folder as the root.
+        local root = vim.fs.root(args.buf, {
+            "pom.xml", "build.gradle", "build.gradle.kts",
+            "settings.gradle", "settings.gradle.kts", "mvnw", "gradlew",
+        }) or vim.fs.dirname(file)
 
-        -- Ensure the workspace directory exists (using single quotes 'p' to avoid syntax errors)
-        vim.fn.mkdir(workspace_dir, 'p')
+        -- Avoid workspace collisions between directories with the same name.
+        local project_name = vim.fn.fnamemodify(root, ":t")
+        local project_id = vim.fn.sha256(root):sub(1, 8)
+        local workspace_dir = vim.fn.stdpath("data")
+            .. "/jdtls-workspace/" .. project_name .. "-" .. project_id
+        vim.fn.mkdir(workspace_dir, "p")
 
         jdtls.start_or_attach({
             cmd = { "jdtls", "-data", workspace_dir },
             root_dir = root,
             capabilities = require("cmp_nvim_lsp").default_capabilities(),
         })
-    end
+    end,
 })
 EOF
 
 
+"=====================================================================
+" UI & Diagnostic Tweaks (Fix for missing errors)
+"=====================================================================
+" 1. Make the UI update faster (Default is 4000ms, which is too slow)
 set updatetime=250
 
+" 2. Configure how diagnostics are displayed
 lua << EOF
 vim.diagnostic.config({
     -- Show text beside the code (Virtual Text)
@@ -256,13 +284,16 @@ vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 })
 EOF
 
-
+" 4. Keybinding to force-show the error (Press <Space> + e)
 nnoremap <leader>e <cmd>lua vim.diagnostic.open_float()<CR>
 
-
+" 5. Navigation to jump to next/prev error (Press [d or ]d)
 nnoremap ]d <cmd>lua vim.diagnostic.goto_next()<CR>
 nnoremap [d <cmd>lua vim.diagnostic.goto_prev()<CR>
 
+"=====================================================================
+" Auto-Formatting (Conform.nvim) - Strict "Clean C" Mode
+"=====================================================================
 lua << EOF
 require("conform").setup({
     formatters_by_ft = {
