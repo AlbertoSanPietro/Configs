@@ -30,7 +30,8 @@
 `de`
 
 * Delete a non bwhitespace separated word:
-```dW
+```
+dW
 
 This doesn't compute
 This compute
