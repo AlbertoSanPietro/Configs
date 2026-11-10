@@ -39,10 +39,22 @@ This compute
 * Delete a line and enter insert mode:
 `cc`, `S`, `c$`
 
+* Delete all to the right:
+`D`
+
+* Delete char at cursor and substitute text:
+`s`
+
+* Delete line and substitute text:
+`S`
+
+* Substitute starting from the cursor:
+`R`
+
 * Change capitalisation:
 `~`
 
-
+This is a line
 
 
 
